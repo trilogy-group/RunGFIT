@@ -105,8 +105,9 @@ public class ServiceInterfaceCC extends ServiceInterface {
      * @param reports
      *            the path to the report file
      * @return "true" or "false"
+     * @throws GfitException 
      */
-    public String execGfitAPI(String testsuite, String reports) {
+    public String execGfitAPI(String testsuite, String reports) throws GfitException {
         GfitAPIPortType port = gfitAPI.getGfitAPISoap11Port();
         setCredentials(port);
 
@@ -114,8 +115,10 @@ public class ServiceInterfaceCC extends ServiceInterface {
         try {
             result = port.run(testsuite, reports);
         } catch (WsiAuthenticationException_Exception e) {
-            e.printStackTrace();
-            result = "false";
+            String message = "Bad username or password. ";
+            message += "username=" + getUsername();
+            message += "password=" + getPassword();
+            throw new GfitException(message);
         }
         return result;
     }

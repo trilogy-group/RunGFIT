@@ -42,6 +42,7 @@ package com.waysysweb;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Enumeration;
@@ -57,9 +58,8 @@ import java.util.Properties;
  * This class provides a command line interface that can invoke the SuiteRunner
  * for GFIT. The command line is as follows:
  * 
- * java -jar rungfit.jar -username username -password password -testsuite
- * testsuite -reports reports -url http://url -logging logging.properties -prop
- * prop -timeout 600
+ * java -jar rungfit-8.00.jar -username username -password password -testsuite
+ * testsuite -reports reports -url http://url -prop prop -timeout 600
  * 
  * where:
  * 
@@ -72,8 +72,6 @@ import java.util.Properties;
  * reports - the file name for the reports
  * 
  * url - the URL for the Guidewire server
- * 
- * logging - the location of the logging properties file
  * 
  * prop - the name of the properites file to use
  * 
@@ -112,6 +110,7 @@ public class RunGFIT {
 
     /** GFIT properties */
     private Properties gfitProperties;
+    private Properties argProperties;
 
     /** a map with a list of legal properties */
     private Map<String, String> allowedProps;
@@ -140,7 +139,8 @@ public class RunGFIT {
      */
     public RunGFIT() {
         errorNum = 0;
-        this.gfitProperties = null;
+        this.gfitProperties = new Properties();
+        this.argProperties  = new Properties();
         this.serviceInterface = null;
         //
         // Load list of legal properties
@@ -150,7 +150,6 @@ public class RunGFIT {
         allowedProps.put("-testsuite", "testsuite");
         allowedProps.put("-reports", "reports");
         allowedProps.put("-url", "url");
-        allowedProps.put("-logging", "logging");
         allowedProps.put("-prop", "prop");
         allowedProps.put("-timeout", "timeout");
         return;
@@ -168,12 +167,14 @@ public class RunGFIT {
      */
     public static void main(String[] args) {
         errorNum = 0;
+        logInfo("Begin GFIT execution - Version " + VERSION);
         RunGFIT webService = new RunGFIT();
         try {
             webService.execute(args);
         } catch (GfitException e) {
             logError(e.getMessage());
-        }
+        }        
+        logInfo("End of GFIT execution");
         System.exit(errorNum);
     }
 
@@ -199,9 +200,8 @@ public class RunGFIT {
         //
         // Run the test suite
         //
-        logInfo("Begin GFIT execution - Version " + VERSION);
         execTests();
-        logInfo("End of GFIT execution");
+        return;
     }
 
     /**
@@ -253,12 +253,25 @@ public class RunGFIT {
         //
         // Get proper service interface
         //
+        String message = "";
         String url = getGfitUrl();
         ServiceInterface.setURL(url);
         serviceInterface = ServiceInterface.getInterface();
         int timeout = getTimeout();
         serviceInterface.setTimeout(timeout);
         String result = "false";
+        String username = getProperty("username");
+        if ((username == null) || (username.length() == 0)) {
+            message = "Username is not supplied";
+            throw new GfitException(message);
+        }
+        serviceInterface.setUsername(username);
+        String password = getProperty("password");
+        if ((password == null) || (password.length() == 0)) {
+            message = "Password is not supplied";
+            throw new GfitException(message);
+        }
+        serviceInterface.setPassword(password);
         //
         // Get properties for GFIT API service
         //
@@ -280,9 +293,13 @@ public class RunGFIT {
         // Execute test suite
         //
         else {
-           result = serviceInterface.execGfitAPI(testSuite, reports);
+            result = serviceInterface.execGfitAPI(testSuite, reports);
             if (result.equals("false")) {
+                logInfo("Test completed with errors.  See test log.");
                 errorNum = 1;
+            }
+            else {
+                logInfo("Test completed with no errors.");
             }
         }
         return;
@@ -298,7 +315,7 @@ public class RunGFIT {
     public String getGfitUrl() throws GfitException {
         String gfitString = getProperty("url");
         if (gfitString != null) {
-            gfitString = gfitString + "/soap/GfitAPI?wsdl";
+            gfitString = gfitString + "/ws/castlebay/GfitAPI";
         } else {
             String message = "Web service URL property must be set";
             throw new GfitException(message);
@@ -330,7 +347,7 @@ public class RunGFIT {
         // precondition: args != null
         //
         String gfitPropertiesFile = getPropertyFile(args);
-        this.gfitProperties = getProperties(gfitPropertiesFile);
+        loadProperties(gfitPropertiesFile);
         checkProperties(this.gfitProperties);
         processCommandArgs(args);
         //
@@ -380,8 +397,8 @@ public class RunGFIT {
      * @throws GfitException
      */
     public void processCommandArgs(String[] args) throws GfitException {
-        assert this.gfitProperties != null;
-        int count = args.length - 1;
+        assert this.argProperties != null;
+        int count = args.length;
         String propName;
         String value;
 
@@ -390,7 +407,7 @@ public class RunGFIT {
                 propName = allowedProps.get(args[i]);
                 value = args[i + 1];
                 value = value.trim();
-                setProperty(propName, value);
+                argProperties.setProperty(propName, value);
             } else {
                 String message = "Unknown property - " + args[i];
                 throw new GfitException(message);
@@ -411,53 +428,54 @@ public class RunGFIT {
      */
     public String getProperty(String name) {
         assert this.gfitProperties != null;
+        assert this.argProperties != null;
         assert name != null;
-        return this.gfitProperties.getProperty(name);
+        String value = "";
+        if (argProperties.contains(name)) {
+            value = argProperties.getProperty(name);
+        } else if (gfitProperties.contains(name)){
+            value = gfitProperties.getProperty(name);
+        }
+        gfitProperties.list(System.out);
+        return value;
     }
 
     /**
-     * Set the value of a property.
-     * 
-     * @param name
-     *            the property name
-     * @param value
-     *            the value of the property
-     */
-    public void setProperty(String name, String value) {
-        this.gfitProperties.setProperty(name, value);
-        return;
-    }
-
-    /**
-     * Return a set of properties based on a property file.
+     * Load properties from a property file.
      * 
      * @param fileName
      *            the name of the property file
-     * @return a set of properties
      * @throws GfitException
      *             when properties cannot be loaded
      */
-    public Properties getProperties(String fileName) throws GfitException {
+    public void loadProperties(String fileName) throws GfitException {
         //
         // Precondition: fileName != null
         //
-        Properties props = new Properties();
         FileInputStream file = openPropertyFile(fileName);
         if (file != null) {
             try {
-                props.load(file);
+                gfitProperties.load(file);
             } catch (Exception e) {
                 String message = "Could not load properties file - " + fileName;
                 throw new GfitException(message);
+            } finally {
+                try {
+                    file.close();
+                } catch (IOException e) {
+                    // do nothing of close throws an exception
+                }
             }
         } else {
-            throw new GfitException("Unable to get properties");
+            throw new GfitException("Unable to get properties file.");
         }
+        gfitProperties.list(System.out);
         //
         // Postcondition: props != null and
         // properties file has been read
         //
-        return props;
+        
+        return;
     }
 
     /**

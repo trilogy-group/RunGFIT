@@ -214,8 +214,10 @@ abstract public class ServiceInterface {
      * @param reports
      *            the path to the report file
      * @return "true" or "false"
+     * @throws GfitException
      */
-    abstract public String execGfitAPI(String testsuite, String reports);
+    abstract public String execGfitAPI(String testsuite, String reports)
+            throws GfitException;
 
     // ------------------------------------------------------------------------------
     // Instance Retrieval

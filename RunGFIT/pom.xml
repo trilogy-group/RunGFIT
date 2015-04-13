@@ -4,6 +4,7 @@
 	<groupId>com.waysysweb</groupId>
 	<artifactId>RunGFIT</artifactId>
 	<version>8.00</version>
+	<packaging>jar</packaging>
 
 	<properties>
 
@@ -37,29 +38,12 @@
 			<artifactId>jaxws-rt</artifactId>
 			<version>2.2.3</version>
 		</dependency>
-<!--  
-		<dependency>
-			<groupId>com.sun.xml.ws</groupId>
-			<artifactId>policy</artifactId>
-			<version>2.5</version>
-		</dependency> 
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-core</artifactId>
-			<version>2.2.11</version>
-		</dependency>
-		<dependency>
-			<groupId>com.sun.xml.bind</groupId>
-			<artifactId>jaxb-impl</artifactId>
-			<version>2.2.11</version>
-		</dependency>
-		<dependency>
-		    <groupId>com.sun.xml.stream.buffer</groupId>
-		    <artifactId>streambuffer</artifactId>
-		    <version>1.5.3</version>
-		</dependency>
-
--->
+		<!-- <dependency> <groupId>com.sun.xml.ws</groupId> <artifactId>policy</artifactId> 
+			<version>2.5</version> </dependency> <dependency> <groupId>com.sun.xml.bind</groupId> 
+			<artifactId>jaxb-core</artifactId> <version>2.2.11</version> </dependency> 
+			<dependency> <groupId>com.sun.xml.bind</groupId> <artifactId>jaxb-impl</artifactId> 
+			<version>2.2.11</version> </dependency> <dependency> <groupId>com.sun.xml.stream.buffer</groupId> 
+			<artifactId>streambuffer</artifactId> <version>1.5.3</version> </dependency> -->
 	</dependencies>
 
 	<build>
@@ -75,6 +59,29 @@
 			<plugin>
 				<groupId>org.jvnet.jax-ws-commons</groupId>
 				<artifactId>jaxws-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-assembly-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<mainClass>com.waysysweb.RunGFIT</mainClass>
+						</manifest>
+					</archive>
+					<descriptorRefs>
+						<descriptorRef></descriptorRef>
+					</descriptorRefs>
+				</configuration>
+				<executions>
+					<execution>
+						<id>make-assembly</id> <!-- this is used for inheritance merges -->
+						<phase>package</phase> <!-- bind to the packaging phase -->
+						<goals>
+							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 

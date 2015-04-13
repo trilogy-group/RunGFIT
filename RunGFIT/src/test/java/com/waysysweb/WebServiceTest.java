@@ -78,8 +78,12 @@ public class WebServiceTest {
     // Tests
     // --------------------------------------------------------------------------
 
+    /**
+     * Test that a GFIT test can be invoked on ClaimCenter
+     * @throws GfitException 
+     */
     @Test
-    public void can_access_web_service() {
+    public void can_access_web_service() throws GfitException {
         String result = service.execGfitAPI(TEST_SUITE, REPORTS);
         assertEquals("Bad result of service call", "false", result);
         return;

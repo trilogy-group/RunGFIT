@@ -43,22 +43,23 @@ package com.waysysweb;
  */
 public class GfitException extends Exception {
 
-	/**
-	 * serial id
-	 */
-	private static final long serialVersionUID = -9053421099407402551L;
+    /**
+     * serial id
+     */
+    private static final long serialVersionUID = -9053421099407402551L;
 
-	// ------------------------------------------------------------------------------
-	// Package Declaration
-	// ------------------------------------------------------------------------------
-	
-	/**
-	 * Create an instance of this class
-	 * 
-	 * @param message the error message associated with this exception
-	 */
-	public GfitException(String message) {
-		super(message);
-		return;
-	}
+    // ------------------------------------------------------------------------------
+    // Constructor
+    // ------------------------------------------------------------------------------
+
+    /**
+     * Create an instance of this class
+     * 
+     * @param message
+     *            the error message associated with this exception
+     */
+    public GfitException(String message) {
+        super(message);
+        return;
+    }
 }

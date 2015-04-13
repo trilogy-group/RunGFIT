@@ -48,7 +48,6 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 //------------------------------------------------------------------------------
 //      Public Class Declaration
@@ -110,7 +109,6 @@ public class RunGFIT {
 
     /** GFIT properties */
     private Properties gfitProperties;
-    private Properties argProperties;
 
     /** a map with a list of legal properties */
     private Map<String, String> allowedProps;
@@ -140,7 +138,6 @@ public class RunGFIT {
     public RunGFIT() {
         errorNum = 0;
         this.gfitProperties = new Properties();
-        this.argProperties  = new Properties();
         this.serviceInterface = null;
         //
         // Load list of legal properties
@@ -173,7 +170,7 @@ public class RunGFIT {
             webService.execute(args);
         } catch (GfitException e) {
             logError(e.getMessage());
-        }        
+        }
         logInfo("End of GFIT execution");
         System.exit(errorNum);
     }
@@ -297,8 +294,7 @@ public class RunGFIT {
             if (result.equals("false")) {
                 logInfo("Test completed with errors.  See test log.");
                 errorNum = 1;
-            }
-            else {
+            } else {
                 logInfo("Test completed with no errors.");
             }
         }
@@ -397,7 +393,6 @@ public class RunGFIT {
      * @throws GfitException
      */
     public void processCommandArgs(String[] args) throws GfitException {
-        assert this.argProperties != null;
         int count = args.length;
         String propName;
         String value;
@@ -407,7 +402,7 @@ public class RunGFIT {
                 propName = allowedProps.get(args[i]);
                 value = args[i + 1];
                 value = value.trim();
-                argProperties.setProperty(propName, value);
+                gfitProperties.setProperty(propName, value);
             } else {
                 String message = "Unknown property - " + args[i];
                 throw new GfitException(message);
@@ -428,15 +423,9 @@ public class RunGFIT {
      */
     public String getProperty(String name) {
         assert this.gfitProperties != null;
-        assert this.argProperties != null;
         assert name != null;
-        String value = "";
-        if (argProperties.contains(name)) {
-            value = argProperties.getProperty(name);
-        } else if (gfitProperties.contains(name)){
-            value = gfitProperties.getProperty(name);
-        }
-        gfitProperties.list(System.out);
+
+        String value = gfitProperties.getProperty(name);
         return value;
     }
 
@@ -469,12 +458,11 @@ public class RunGFIT {
         } else {
             throw new GfitException("Unable to get properties file.");
         }
-        gfitProperties.list(System.out);
         //
         // Postcondition: props != null and
         // properties file has been read
         //
-        
+
         return;
     }
 
@@ -511,9 +499,9 @@ public class RunGFIT {
     public void checkProperties(Properties properties) throws GfitException {
         assert properties != null;
         String propName;
-        Enumeration<Object> props = properties.keys();
+        Enumeration<String> props = properties.keys();
         while (props.hasMoreElements()) {
-            propName = (String) props.nextElement();
+            propName = props.nextElement();
             if (!allowedProps.containsValue(propName)) {
                 String message = "Unrecognized property in property file - "
                         + propName;

@@ -42,6 +42,7 @@ import java.util.Map;
 import javax.xml.namespace.QName;
 import javax.xml.ws.BindingProvider;
 
+import com.sun.xml.internal.ws.client.BindingProviderProperties;
 import com.waysysweb.gfit.GfitAPI;
 import com.waysysweb.gfit.GfitAPIPortType;
 import com.waysysweb.gfit.WsiAuthenticationException_Exception;
@@ -124,26 +125,19 @@ public class ServiceInterfaceCC extends ServiceInterface {
     }
 
     /**
-     * Set the credentials for the web service
+     * Set the credentials and timeout for the web service
      * 
      * @param port the port for the web service
      */
     private void setCredentials(GfitAPIPortType port) {
+        String timeout = String.valueOf(getTimeout());
         BindingProvider bp = (BindingProvider) port;
         Map<String, Object> requestContext = bp.getRequestContext();
         requestContext.put(BindingProvider.USERNAME_PROPERTY, getUsername());
         requestContext.put(BindingProvider.PASSWORD_PROPERTY, getPassword());
+        requestContext.put(BindingProviderProperties.CONNECT_TIMEOUT, timeout);
+        requestContext.put(BindingProviderProperties.REQUEST_TIMEOUT, timeout);
         return;
     }
 
-    /**
-     * Set the timeout on the Web service
-     * 
-     * @param gfitAPI
-     *            the Web service
-     */
-    public void setWebServiceTimeout(GfitAPI gfitAPI) {
-        // ((GfitAPISoapBindingStub)gfitAPI).setTimeout(getTimeout() * 1000);
-        return;
-    }
 }

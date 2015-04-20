@@ -60,29 +60,39 @@
 				<groupId>org.jvnet.jax-ws-commons</groupId>
 				<artifactId>jaxws-maven-plugin</artifactId>
 			</plugin>
+			<!-- <plugin> <artifactId>maven-assembly-plugin</artifactId> <configuration> 
+				<archive> <manifest> <mainClass>com.waysysweb.RunGFIT</mainClass> </manifest> 
+				</archive> <descriptor>src/assembly/dep.xml</descriptor> </configuration> 
+				<executions> <execution> <id>make-assembly</id> <phase>package</phase> <goals> 
+				<goal>single</goal> </goals> </execution> </executions> </plugin> -->
 
 			<plugin>
-				<artifactId>maven-assembly-plugin</artifactId>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>2.3</version>
 				<configuration>
-					<archive>
-						<manifest>
-							<mainClass>com.waysysweb.RunGFIT</mainClass>
-						</manifest>
-					</archive>
-					<descriptorRefs>
-						<descriptorRef></descriptorRef>
-					</descriptorRefs>
+					<!-- put your configurations here -->
 				</configuration>
 				<executions>
 					<execution>
-						<id>make-assembly</id> <!-- this is used for inheritance merges -->
-						<phase>package</phase> <!-- bind to the packaging phase -->
+						<phase>package</phase>
 						<goals>
-							<goal>single</goal>
+							<goal>shade</goal>
 						</goals>
+						<configuration>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<mainClass>com.waysysweb.RunGFIT</mainClass>
+								</transformer>
+							</transformers>
+						</configuration>
+
 					</execution>
 				</executions>
 			</plugin>
+
+
 		</plugins>
 
 		<pluginManagement>
